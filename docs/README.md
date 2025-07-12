@@ -2,7 +2,9 @@
 
 ## 📋 目录
 - [模型概述](#模型概述)
-- [企业架构设计](#企业架构设计)
+- [智能体架构设计](#智能体架构设计)
+- [预期形成机制](#预期形成机制)
+- [市场模块体系](#市场模块体系)
 - [理论基础](#理论基础)
 - [核心改进](#核心改进)
 - [系统架构](#系统架构)
@@ -23,6 +25,7 @@
 2. **市场机制设计**：基于质量的供需匹配如何影响政策效果？
 3. **技术扩散路径**：绿色技术在异质性企业间的扩散机制？
 4. **政策最优化**：不同政策工具的效果差异及最优组合？
+5. **预期形成机制**：智能体如何基于历史数据形成对未来状态的预期？
 
 ### 简化设计原则
 
@@ -37,16 +40,16 @@
 - **不确定性环境**：企业面临未来销售额、市场价格、投入可得性、工资、现金流等根本不确定性
 - **预期形成**：每个企业必须对未来形成预期，而这些预期可能与实际情况不符
 
-## 🏗️ 企业架构设计
+## 🏗️ 智能体架构设计
 
-### 简化的企业分类体系
+### 核心智能体类型
 
-基于农业经济现实和建模简化需要，本模型设定**六大类企业**：
+#### **1. 企业智能体（7类）**
 
-#### **1. 工业企业（3类）- 上游供给**
+##### **工业企业（3类）- 上游供给**
 这些企业为农业生产提供工业投入品，是农业现代化的重要支撑：
 
-##### `agents.PesticideEnterpriseAgent` - 农药企业
+##### `PesticideEnterpriseAgent` - 农药企业
 ```matlab
 % 核心异质性属性
 properties:
@@ -65,7 +68,7 @@ Q = [α_T·T^ρ + α_Q·QInv^ρ + α_R·RD^ρ + α_Rep·Rep^ρ]^(1/ρ)
 其中：α_T=0.35, α_Q=0.30, α_R=0.25, α_Rep=0.10, ρ=-0.4
 ```
 
-##### `agents.FertilizerEnterpriseAgent` - 化肥企业  
+##### `FertilizerEnterpriseAgent` - 化肥企业  
 ```matlab
 % 专业化异质性属性
 properties:
@@ -78,7 +81,7 @@ properties:
 end
 ```
 
-##### `agents.AgroProcessingEnterpriseAgent` - 农产品加工企业
+##### `AgroProcessingEnterpriseAgent` - 农产品加工企业
 ```matlab
 % 加工业务异质性
 properties:
@@ -93,20 +96,18 @@ end
 #### **2. 农业生产企业（3类）- 核心生产**
 **严格限定为三类农业生产企业**，体现农业生产的基本分化：
 
-##### `agents.GrainFarmAgent` - 粮食作物生产企业
+##### `GrainFarmAgent` - 粮食作物生产企业
 专业化生产小麦、玉米、水稻等粮食作物，注重稳定性和规模效应。
 
-##### `agents.CashCropFarmAgent` - 经济作物生产企业  
+##### `CashCropFarmAgent` - 经济作物生产企业  
 专业化生产棉花、油料、糖料等经济作物，注重市场价值和品质。
 
-##### `agents.MixedCropFarmAgent` - 混合作物生产企业
+##### `MixedCropFarmAgent` - 混合作物生产企业
 同时生产粮食作物和经济作物，分散风险但可能牺牲专业化效率。
-
-**重要说明**：**不考虑畜牧业等其他农业生产企业**，模型聚焦于种植业。
 
 #### **3. 农业服务企业（1类）- 技术服务**
 
-##### `agents.AgriculturalServiceEnterpriseAgent` - 农业服务企业
+##### `AgriculturalServiceEnterpriseAgent` - 农业服务企业
 ```matlab
 % 服务能力异质性
 properties:
@@ -116,6 +117,70 @@ properties:
     technology_level = 0.6          % 技术水平 [0-1]
     technical_expertise = 0.5       % 技术专长 [0-1]
     service_coverage_radius = 20    % 服务覆盖半径（公里）
+end
+```
+
+#### **4. 农户智能体（2类）**
+
+##### `HouseholdAgent` - 传统农户
+```matlab
+% 农户异质性属性
+properties:
+    age                     % [20,80] 年龄
+    education               % [0,16] 教育年限
+    land_holding            % [1,15] 土地规模（亩）
+    quality_preference      % [0.3,0.9] 质量偏好
+    price_sensitivity       % [0.8,2.0] 价格敏感度
+    risk_tolerance          % [0.2,0.8] 风险偏好
+    learning_ability        % [0.3,0.9] 学习能力
+    social_network_strength % [0.2,0.8] 社会网络强度
+end
+```
+
+##### `FarmerAgentWithExpectations` - 带预期的农户
+继承自`HouseholdAgent`，具备预期形成和学习能力。
+
+#### **5. 政府智能体（2类）**
+
+##### `GovernmentAgent` - 基础政府智能体
+```matlab
+% 政府政策参数
+properties:
+    emission_tax_rate       % [0,0.5] 排放税率
+    green_subsidy_rate      % [0,0.3] 绿色补贴率
+    compliance_penalty_rate % [0,0.4] 合规罚款率
+    quality_standard        % [0.3,0.9] 质量标准要求
+    policy_budget           % [0,Inf] 政策实施预算
+    policy_style            % struct 政策制定风格
+end
+```
+
+##### `GovernmentAgentWithExpectations` - 带预期的政府智能体
+继承自`GovernmentAgent`，具备政策学习和自适应调整能力。
+
+#### **6. 劳动力市场智能体（2类）**
+
+##### `LaborSupplierAgent` - 劳动力供给方
+```matlab
+% 劳动力供给属性
+properties:
+    skill_level             % [1,5] 技能等级
+    available_work_hours    % [1000,2500] 年可工作小时数
+    reservation_wage        % [15,50] 保留工资（元/小时）
+    commuting_tolerance     % [10,50] 通勤容忍度（公里）
+    training_willingness    % [0,1] 培训参与意愿
+end
+```
+
+##### `LaborDemanderAgent` - 劳动力需求方
+```matlab
+% 劳动力需求属性
+properties:
+    production_scale        % [50,1000] 生产规模
+    technology_level        % [0.3,0.9] 技术水平
+    labor_demand_forecast   % struct 劳动力需求预测
+    max_wage_budget         % [50000,500000] 最大工资预算
+    preferred_skill_levels  % [1,5] 偏好的技能水平
 end
 ```
 
@@ -144,9 +209,97 @@ Quality_{i,t} = A_quality × [α_T×Tech_{i,t}^ρ + α_Q×QualityCapital_{i,t}^�
 Reputation_{i,t+1} = α_rep × Reputation_{i,t} + (1-α_rep) × TargetReputation_{i,t} + shock_{i,t}
 ```
 
-### 市场机制简化
+## 🧠 预期形成机制
 
-#### **基于质量的双边匹配**
+### 核心模块
+
+#### **`AgentWithExpectations` - 带预期功能的智能体基类**
+所有具备预期形成能力的智能体都继承自此基类。
+
+#### **`ExpectationFormationModule` - 预期形成模块**
+负责实现AR(1)自适应学习机制和预期更新算法。
+
+### 预期形成算法
+
+#### **AR(1)自适应学习机制**
+```matlab
+% 预期形成过程
+E_t[X_{t+h}] = α + β × X_t + γ × trend_t + ε_t
+
+其中：
+α, β, γ: 通过递归最小二乘法在线学习的参数
+h: 预测期数
+trend_t: 趋势项
+ε_t: 随机误差项
+```
+
+#### **置信度调整机制**
+```matlab
+% 预期置信度计算
+Confidence_t = exp(-λ × RMSE_t)
+
+其中：
+λ: 置信度衰减系数
+RMSE_t: 滚动预测均方根误差
+```
+
+### 预期变量类型
+
+#### **企业预期变量**
+- **市场需求**：未来产品需求量和需求结构
+- **成本变化**：原材料成本、劳动力成本、技术成本
+- **政策环境**：环境税率、补贴政策、监管标准
+- **竞争强度**：市场竞争程度、竞争对手行为
+
+#### **农户预期变量**
+- **价格趋势**：农产品价格、投入品价格
+- **政策补贴**：种粮补贴、技术补贴、环保补贴
+- **气候条件**：温度、降水、极端事件概率
+- **市场机会**：非农就业机会、土地流转机会
+
+#### **政府预期变量**
+- **政策效果**：政策实施效果、目标达成度
+- **经济指标**：GDP增长、就业率、通胀率
+- **社会反馈**：公众满意度、利益集团反应
+- **外部环境**：国际政策、气候变化、技术发展
+
+## 🏪 市场模块体系
+
+### 核心市场模块
+
+#### **`PesticideMarketModule` - 农药市场（质量匹配）**
+- **功能**：农药企业与农业企业之间的供需匹配
+- **特色**：基于质量偏好的双边搜寻匹配算法
+- **机制**：质量匹配、价格发现、声誉传播
+
+#### **`FertilizerMarketModule` - 化肥市场**
+- **功能**：化肥企业与农业企业之间的交易
+- **特色**：考虑环保认证和绿色技术偏好
+- **机制**：环保加分、绿色产品溢价
+
+#### **`CommodityMarketModule` - 商品市场**
+- **功能**：农产品交易和价格发现
+- **特色**：基于质量等级的价格发现机制
+- **机制**：期货合约、季节性价格波动
+
+#### **`LandMarketModule` - 土地市场**
+- **功能**：土地流转和租赁交易
+- **特色**：考虑情感价值和交易成本
+- **机制**：双边匹配、价格协商、合同设计
+
+#### **`LaborMarketModule` - 劳动力市场**
+- **功能**：农业劳动力供需匹配和工资决定
+- **特色**：基于技能匹配的延迟接受算法
+- **机制**：季节性需求、技能发展、培训项目
+
+#### **`InputMarketModule` - 投入品市场**
+- **功能**：农业生产投入品的交易
+- **特色**：多品种投入品的综合交易
+- **机制**：质量检验、价格竞争、供应链管理
+
+### 市场匹配机制
+
+#### **质量匹配**
 ```matlab
 % 匹配效用函数
 U(demander, supplier) = w_quality×QualityUtility + w_price×PriceUtility + 
@@ -156,6 +309,29 @@ U(demander, supplier) = w_quality×QualityUtility + w_price×PriceUtility +
 QualityUtility = exp(-|supplier.quality - demander.quality_preference|²/2σ²)
 PriceUtility = exp(-price_sensitivity × normalized_price)
 ReputationUtility = 1/(1 + exp(-reputation_slope × (supplier.reputation - 0.5)))
+```
+
+#### **价格发现**
+```matlab
+% 动态价格调整机制
+P_{t+1} = P_t + α × (Demand_t - Supply_t) + β × (P_target - P_t) + ε_t
+
+其中：
+α: 供需调整系数
+β: 目标价格调整系数
+ε_t: 随机冲击
+```
+
+#### **信息传播**
+```matlab
+% 声誉传播机制
+Reputation_{i,t+1} = Reputation_{i,t} + γ × (ActualQuality_{i,t} - ExpectedQuality_{i,t}) + 
+                     δ × NetworkEffect_{i,t} + η_t
+
+其中：
+γ: 质量反馈系数
+δ: 网络效应系数
+η_t: 随机噪声
 ```
 
 ## 🏛️ 理论基础
@@ -367,27 +543,36 @@ graph TB
     A[多智能体气候政策模型<br/>简化版本] --> B[工业企业 3类]
     A --> C[农业生产企业 3类]
     A --> D[服务企业 1类]
-    A --> E[农户智能体]
-    A --> F[政府智能体]
-    A --> G[市场模块]
+    A --> E[农户智能体 2类]
+    A --> F[政府智能体 2类]
+    A --> G[劳动力市场智能体 2类]
+    A --> H[市场模块 6类]
     
-    B --> B1[农药企业<br/>agents.PesticideEnterpriseAgent]
-    B --> B2[化肥企业<br/>agents.FertilizerEnterpriseAgent]
-    B --> B3[农产品加工企业<br/>agents.AgroProcessingEnterpriseAgent]
+    B --> B1[农药企业<br/>PesticideEnterpriseAgent]
+    B --> B2[化肥企业<br/>FertilizerEnterpriseAgent]
+    B --> B3[农产品加工企业<br/>AgroProcessingEnterpriseAgent]
     
-    C --> C1[粮食作物生产企业<br/>agents.GrainFarmAgent]
-    C --> C2[经济作物生产企业<br/>agents.CashCropFarmAgent]
-    C --> C3[混合作物生产企业<br/>agents.MixedCropFarmAgent]
+    C --> C1[粮食作物生产企业<br/>GrainFarmAgent]
+    C --> C2[经济作物生产企业<br/>CashCropFarmAgent]
+    C --> C3[混合作物生产企业<br/>MixedCropFarmAgent]
     
-    D --> D1[农业服务企业<br/>agents.AgriculturalServiceEnterpriseAgent]
+    D --> D1[农业服务企业<br/>AgriculturalServiceEnterpriseAgent]
     
-    E --> E1[小农户<br/>agents.HouseholdAgent]
+    E --> E1[传统农户<br/>HouseholdAgent]
+    E --> E2[带预期农户<br/>FarmerAgentWithExpectations]
     
-    G --> G1[农药市场<br/>modules.PesticideMarketModule]
-    G --> G2[化肥市场<br/>modules.FertilizerMarketModule]  
-    G --> G3[商品市场<br/>modules.CommodityMarketModule]
-    G --> G4[土地市场<br/>modules.LandMarketModule]
-    G --> G5[劳动力市场<br/>modules.LaborMarketModule]
+    F --> F1[基础政府智能体<br/>GovernmentAgent]
+    F --> F2[带预期政府智能体<br/>GovernmentAgentWithExpectations]
+    
+    G --> G1[劳动力供给方<br/>LaborSupplierAgent]
+    G --> G2[劳动力需求方<br/>LaborDemanderAgent]
+    
+    H --> H1[农药市场<br/>PesticideMarketModule]
+    H --> H2[化肥市场<br/>FertilizerMarketModule]  
+    H --> H3[商品市场<br/>CommodityMarketModule]
+    H --> H4[土地市场<br/>LandMarketModule]
+    H --> H5[劳动力市场<br/>LaborMarketModule]
+    H --> H6[投入品市场<br/>InputMarketModule]
 ```
 
 ### 企业异质性表征
@@ -468,7 +653,7 @@ params.simulation.max_time = 100;
 params.enterprises.total_count = 60;  % 总企业数量
 params.households.count = 300;
 
-% 企业分布（简化为6类）
+% 企业分布（简化为7类）
 params.enterprises.pesticide_count = 10;    % 农药企业
 params.enterprises.fertilizer_count = 10;   % 化肥企业  
 params.enterprises.processing_count = 10;   % 加工企业
@@ -500,7 +685,36 @@ fprintf('仿真完成，耗时: %.2f秒\n', elapsed_time);
 model.generate_results_report();
 ```
 
-#### 2. 企业异质性分析实验
+#### 2. 预期形成机制实验
+```matlab
+%% 预期形成机制实验
+fprintf('=== 预期形成机制实验 ===\n');
+
+% 创建带预期的智能体
+farmer_with_expectations = agents.FarmerAgentWithExpectations(1, params);
+enterprise_with_expectations = agents.EnterpriseAgentWithExpectations(1, params);
+
+% 观察预期形成过程
+for t = 1:12
+    % 模拟市场数据
+    market_data = struct();
+    market_data.price = 2.5 + 0.1 * randn;
+    market_data.demand = 1000 + 50 * randn;
+    
+    % 更新预期
+    farmer_with_expectations.update_expectations(market_data, t);
+    enterprise_with_expectations.update_expectations(market_data, t);
+    
+    % 显示预期结果
+    farmer_price_exp = farmer_with_expectations.get_expectation('price', 1);
+    enterprise_demand_exp = enterprise_with_expectations.get_expectation('demand', 1);
+    
+    fprintf('时间步 %d: 农户价格预期=%.3f, 企业需求预期=%.3f\n', ...
+            t, farmer_price_exp, enterprise_demand_exp);
+end
+```
+
+#### 3. 企业异质性分析实验
 ```matlab
 %% 企业异质性对政策效果的影响分析
 
@@ -568,10 +782,10 @@ fprintf('=== 质量匹配算法实验 ===\n');
 model = core.MultiAgentClimatePolicyModel();
 
 % 提取农药企业和农户
-pesticide_enterprises = model.get_enterprises_by_type('agents.PesticideEnterpriseAgent');
-agricultural_demanders = [model.get_enterprises_by_type('agents.GrainFarmAgent'), ...
-                         model.get_enterprises_by_type('agents.CashCropFarmAgent'), ...
-                         model.get_enterprises_by_type('agents.MixedCropFarmAgent')];
+pesticide_enterprises = model.get_enterprises_by_type('PesticideEnterpriseAgent');
+agricultural_demanders = [model.get_enterprises_by_type('GrainFarmAgent'), ...
+                         model.get_enterprises_by_type('CashCropFarmAgent'), ...
+                         model.get_enterprises_by_type('MixedCropFarmAgent')];
 
 % 创建质量匹配市场
 quality_market = modules.PesticideMarketModule(pesticide_enterprises, agricultural_demanders);
@@ -695,7 +909,7 @@ tech_shock_params = struct(...
 - **企业异质性科学化建模**：从抽象"品牌影响力"转向基于技术水平和产品质量的科学化表征
 - **质量匹配市场机制**：实现基于质量偏好的双边搜寻匹配算法  
 - **预期形成机制**：每个智能体具备基于AR(1)的自适应学习能力
-- **简化但完整的企业体系**：6类企业覆盖农业产业链核心环节
+- **简化但完整的企业体系**：7类企业覆盖农业产业链核心环节
 
 ### 2. 方法论贡献
 - **多层次验证体系**：统计验证、模式匹配、行为验证、系统验证
@@ -712,7 +926,7 @@ tech_shock_params = struct(...
 
 **开发团队**：多智能体建模研究组  
 **邮箱**：research@abm-climate.org  
-**GitHub**：https://github.com/climate-abm/simplified-model  
+**GitHub**：https://github.com/DCCAISSON/ClimatePolicyABM_Clean  
 **文档网站**：https://climate-abm.github.io/docs
 
 ---
