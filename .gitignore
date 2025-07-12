@@ -1,0 +1,27 @@
+# 忽略输出和中间结果
+data/output/
+results/
+*.asv
+*.mat
+*.fig
+*.log
+*.tmp
+*.bak
+*.DS_Store
+*.~*
+
+# MATLAB临时文件
+*.mex*
+*.p
+
+# 系统文件
+Thumbs.db
+.DS_Store
+
+# IDE文件
+.vscode/
+.idea/
+
+# 备份文件
+*_backup.m
+*_old.m

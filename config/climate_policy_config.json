@@ -1,0 +1,245 @@
+{
+  "simulation": {
+    "max_time": 100,
+    "time_step": 1,
+    "advanced_game": true
+  },
+  "spatial": {
+    "grid_size": [50, 50],
+    "urban_ratio": 0.3,
+    "enterprise_density": 0.1
+  },
+  "households": {
+    "count": 1000,
+    "age_distribution": {
+      "mean": 45,
+      "std": 15
+    },
+    "family_size_distribution": {
+      "mean": 4,
+      "std": 1.5
+    },
+    "gender_ratio": 0.5,
+    "education_distribution": {
+      "mean": 9,
+      "std": 3
+    },
+    "land_holding_distribution": {
+      "mean": 5,
+      "std": 3
+    },
+    "off_farm_income_ratio": {
+      "mean": 0.6,
+      "std": 0.2
+    }
+  },
+  "enterprises": {
+    "count": 100,
+    "agricultural_ratio": 0.4,
+    "size_distribution": {
+      "mean": 50,
+      "std": 20
+    },
+    "wage_distribution": {
+      "mean": 3000,
+      "std": 1000
+    }
+  },
+  "government": {
+    "grain_subsidy_rate": 0.1,
+    "land_red_line_ratio": 0.8,
+    "climate_adaptation_policy": 0.5,
+    "rural_urban_mobility_policy": 0.7
+  },
+  "climate": {
+    "base_productivity": 1.0,
+    "variability": 0.2,
+    "trend": 0.01,
+    "extreme_event_probability": 0.05
+  },
+  "economic": {
+    "grain_price": 2.5,
+    "cash_crop_price": 4.0,
+    "production_cost": 1.5,
+    "transportation_cost": 0.5
+  },
+  "evolutionary_game": {
+    "enabled": true,
+    "neighbor_count": 3,
+    "imitation_strength": 0.5,
+    "mutation_rate": 0.02,
+    "spatial_interaction": {
+      "max_spatial_distance": 10,
+      "spatial_decay_factor": 0.1
+    },
+    "cognitive_bias": {
+      "confirmation_bias": 0.3,
+      "anchor_effect": 0.2,
+      "herd_effect": 0.3
+    },
+    "adaptive_mutation": {
+      "environmental_pressure_threshold": 0.5,
+      "diversity_threshold": 0.3
+    },
+    "innovation_diffusion": {
+      "innovation_susceptibility_mean": 0.5,
+      "innovation_susceptibility_std": 0.2
+    }
+  },
+  "land_module": {
+    "mu_rho": 80,
+    "sigma_rho": 20,
+    "c0": 30,
+    "c_search": 50,
+    "alpha_grain": 0.9,
+    "alpha_cash": 1.15,
+    "psi_grain": 0.3,
+    "psi_cash": 0.2,
+    "land_redline_mu": 1.2e8,
+    "expropriation_rate": 0.006,
+    "theta_comp": 1.0,
+    "years_comp": 20
+  },
+  "experiments": {
+    "climate_change_scenarios": [
+      {
+        "name": "baseline",
+        "trend": 0.01,
+        "variability": 0.2
+      },
+      {
+        "name": "moderate_climate_change",
+        "trend": 0.02,
+        "variability": 0.25
+      },
+      {
+        "name": "severe_climate_change",
+        "trend": 0.03,
+        "variability": 0.3
+      }
+    ],
+    "policy_scenarios": [
+      {
+        "name": "baseline_policy",
+        "grain_subsidy_rate": 0.1,
+        "land_red_line_ratio": 0.8
+      },
+      {
+        "name": "high_subsidy",
+        "grain_subsidy_rate": 0.15,
+        "land_red_line_ratio": 0.8
+      },
+      {
+        "name": "strict_land_protection",
+        "grain_subsidy_rate": 0.1,
+        "land_red_line_ratio": 0.9
+      },
+      {
+        "name": "flexible_policy",
+        "grain_subsidy_rate": 0.05,
+        "land_red_line_ratio": 0.7
+      }
+    ],
+    "evolutionary_game_scenarios": [
+      {
+        "name": "baseline_evolution",
+        "imitation_strength": 0.5,
+        "mutation_rate": 0.02
+      },
+      {
+        "name": "high_imitation",
+        "imitation_strength": 0.8,
+        "mutation_rate": 0.01
+      },
+      {
+        "name": "high_mutation",
+        "imitation_strength": 0.3,
+        "mutation_rate": 0.05
+      },
+      {
+        "name": "cognitive_bias_focused",
+        "confirmation_bias": 0.5,
+        "anchor_effect": 0.3,
+        "herd_effect": 0.4
+      }
+    ],
+    "gender_analysis": {
+      "enabled": true,
+      "gender_specific_parameters": {
+        "male": {
+          "off_farm_probability_multiplier": 1.2,
+          "technology_adoption_multiplier": 1.1,
+          "risk_aversion_multiplier": 0.9
+        },
+        "female": {
+          "off_farm_probability_multiplier": 0.8,
+          "technology_adoption_multiplier": 0.9,
+          "risk_aversion_multiplier": 1.1
+        }
+      }
+    },
+    "family_structure_analysis": {
+      "enabled": true,
+      "family_size_effects": {
+        "large_family": {
+          "threshold": 6,
+          "off_farm_probability_multiplier": 1.3,
+          "land_transfer_probability_multiplier": 0.7
+        },
+        "small_family": {
+          "threshold": 3,
+          "off_farm_probability_multiplier": 0.8,
+          "land_transfer_probability_multiplier": 1.2
+        }
+      }
+    },
+    "urban_rural_mobility": {
+      "enabled": true,
+      "mobility_parameters": {
+        "distance_decay": 0.1,
+        "wage_differential_threshold": 1.5,
+        "urban_attraction_factor": 0.3,
+        "rural_retention_factor": 0.2
+      }
+    }
+  },
+  "output": {
+    "save_results": true,
+    "save_figures": true,
+    "generate_reports": true,
+    "output_directory": "results/climate_policy_model",
+    "file_prefix": "climate_policy_"
+  },
+  "analysis": {
+    "resilience_metrics": {
+      "income_resilience": true,
+      "production_resilience": true,
+      "nutrition_health": true,
+      "social_stability": true
+    },
+    "policy_effectiveness": {
+      "grain_security": true,
+      "farmer_income": true,
+      "environmental_sustainability": true,
+      "social_stability": true
+    },
+    "evolutionary_game_metrics": {
+      "strategy_distribution": true,
+      "convergence_speed": true,
+      "diversity_evolution": true,
+      "spatial_clustering": true
+    },
+    "sensitivity_analysis": {
+      "enabled": true,
+      "parameters": [
+        "grain_subsidy_rate",
+        "land_red_line_ratio",
+        "climate_adaptation_policy",
+        "rural_urban_mobility_policy",
+        "imitation_strength",
+        "mutation_rate"
+      ],
+      "variation_range": [0.5, 1.5]
+    }
+  }
+} 
